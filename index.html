@@ -1,0 +1,192 @@
+HTML
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#b51220">
+<title>Eterno Delírio Gestão</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#151515;color:#fff;font-family:Arial,sans-serif}
+header{border-bottom:3px solid #d71920;padding-bottom:12px}
+h1{color:#ff404b;font-size:25px;margin:8px 0}
+h2{font-size:19px;margin-top:0}
+section{background:#252525;border-radius:12px;padding:15px;margin:15px 0}
+label{display:block;margin-top:10px;color:#ddd}
+input,select,button{width:100%;padding:12px;margin-top:6px;border-radius:7px;border:1px solid #555;font-size:16px}
+input,select{background:#fff;color:#171717}
+button{background:#d71920;color:white;border:0;font-weight:bold;cursor:pointer}
+.secondary{background:#444}
+.resultado{background:#171717;padding:12px;border-radius:8px;margin-top:10px;line-height:1.6}
+.item{padding:10px 0;border-bottom:1px solid #444;overflow-wrap:anywhere}
+.verde{color:#7ee0a1}.vermelho{color:#ff7c7c}.amarelo{color:#ffd166}
+small{color:#bbb}
+</style>
+</head>
+<body>
+<header>
+<h1>ETERNO DELÍRIO GESTÃO</h1>
+<small>Organização, finanças e decisões inteligentes</small>
+</header>
+
+<section>
+<h2>💰 Registrar dinheiro</h2>
+<label>Qual área?</label>
+<select id="conta">
+<option>Vida pessoal</option>
+<option>Grupo Eterno Delírio</option>
+</select>
+<label>Movimentação</label>
+<select id="tipo">
+<option value="entrada">Entrada</option>
+<option value="saida">Saída</option>
+</select>
+<label>Valor em reais</label>
+<input id="valor" type="number" min="0.01" step="0.01" placeholder="Ex.: 150">
+<label>Descrição</label>
+<input id="descricao" placeholder="Ex.: cachê, mercado, transporte">
+<button onclick="lancar()">Registrar movimentação</button>
+<div id="resumo" class="resultado"></div>
+<div id="movimentos"></div>
+<button class="secondary" onclick="limparMovimentos()">Apagar movimentações desta área</button>
+</section>
+
+<section>
+<h2>📅 Agenda</h2>
+<label>Compromisso</label>
+<input id="evento" placeholder="Ex.: show, conta, ensaio">
+<label>Data e hora</label>
+<input id="data" type="datetime-local">
+<button onclick="agendar()">Salvar compromisso</button>
+<div id="agenda"></div>
+<small>A agenda será salva no navegador. Ainda não envia notificações quando o aplicativo está fechado.</small>
+</section>
+
+<section>
+<h2>🧠 Orientação financeira</h2>
+<label>Escolha a área para analisar</label>
+<select id="areaAnalise">
+<option>Vida pessoal</option>
+<option>Grupo Eterno Delírio</option>
+</select>
+<label>Contas e despesas previstas (R$)</label>
+<input id="contasFuturas" type="number" min="0" step="0.01" placeholder="Total que ainda precisa pagar">
+<label>Quanto quer guardar (R$)</label>
+<input id="guardar" type="number" min="0" step="0.01" placeholder="Reserva desejada">
+<button onclick="analisar()">Analisar minha situação</button>
+<div id="dicas" class="resultado">Registre suas entradas e saídas para receber orientações com base nos seus números.</div>
+</section>
+
+<section>
+<h2>🛠️ Comprar equipamento agora?</h2>
+<label>Área</label>
+<select id="areaCompra">
+<option>Grupo Eterno Delírio</option>
+<option>Vida pessoal</option>
+</select>
+<label>Preço do equipamento (R$)</label>
+<input id="preco" type="number" min="0.01" step="0.01" placeholder="Ex.: 1200">
+<label>Dinheiro que já está reservado para essa compra (R$)</label>
+<input id="reservaCompra" type="number" min="0" step="0.01" placeholder="Ex.: 500">
+<label>Contas que ainda precisam ser pagas (R$)</label>
+<input id="contasCompra" type="number" min="0" step="0.01" placeholder="Ex.: 300">
+<label>Essa compra é urgente?</label>
+<select id="urgente">
+<option value="nao">Não, posso esperar</option>
+<option value="sim">Sim, preciso para trabalhar</option>
+</select>
+<button onclick="decidirCompra()">Avaliar compra</button>
+<div id="decisao" class="resultado">Preencha os valores para receber uma orientação.</div>
+</section>
+
+<section>
+<h2>📈 Plano para investir</h2>
+<label>Área</label>
+<select id="areaInvestir">
+<option>Vida pessoal</option>
+<option>Grupo Eterno Delírio</option>
+</select>
+<label>Quanto pensa em investir (R$)</label>
+<input id="valorInvestir" type="number" min="0" step="0.01" placeholder="Ex.: 200">
+<label>Esse dinheiro pode ficar guardado?</label>
+<select id="prazoInvestir">
+<option value="curto">Posso precisar em breve</option>
+<option value="longo">Posso deixar por mais tempo</option>
+</select>
+<button onclick="orientarInvestimento()">Ver orientação</button>
+<div id="investimento" class="resultado">A orientação considera o saldo registrado e o valor pretendido. Não é uma garantia de rendimento.</div>
+</section>
+
+<script>
+const $=id=>document.getElementById(id);
+const ler=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return []}};
+const salvar=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const dinheiro=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function movimentos(){return ler('ed_movimentos')}
+function saldo(area){
+return movimentos().filter(x=>x.area===area).reduce((s,x)=>s+(x.tipo==='entrada'?x.valor:-x.valor),0);
+}
+function lancar(){
+const area=$('conta').value,tipo=$('tipo').value,v=Number($('valor').value),desc=$('descricao').value.trim();
+if(!Number.isFinite(v)||v<=0||!desc){alert('Informe um valor válido e uma descrição.');return}
+let a=movimentos();a.unshift({area,tipo,valor:v,desc,data:new Date().toISOString()});salvar('ed_movimentos',a);
+$('valor').value='';$('descricao').value='';atualizar();analisar();
+}
+function atualizar(){
+const area=$('conta').value;
+$('resumo').innerHTML='<b>'+area+'</b><br>Saldo registrado: <span class="'+(saldo(area)>=0?'verde':'vermelho')+'">'+dinheiro(saldo(area))+'</span>';
+$('movimentos').innerHTML='<h3>Últimas movimentações</h3>'+movimentos().filter(x=>x.area===area).slice(0,20).map(x=>'<div class="item">'+esc(x.desc)+'<br><small>'+esc(x.area)+' · '+(x.tipo==='entrada'?'Entrada':'Saída')+'</small><br><b class="'+(x.tipo==='entrada'?'verde':'vermelho')+'">'+(x.tipo==='entrada'?'+':'−')+dinheiro(x.valor)+'</b></div>').join('');
+$('agenda').innerHTML=ler('ed_agenda').sort((a,b)=>a.data.localeCompare(b.data)).map(x=>'<div class="item">'+esc(x.evento)+'<br><small>'+new Date(x.data).toLocaleString('pt-BR')+'</small><br><button class="secondary" onclick="removerEvento('+x.id+')">Excluir compromisso</button></div>').join('')||'<small>Nenhum compromisso cadastrado.</small>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function limparMovimentos(){
+const area=$('conta').value;
+if(!confirm('Apagar todas as movimentações de '+area+'? Esta ação não pode ser desfeita.'))return;
+salvar('ed_movimentos',movimentos().filter(x=>x.area!==area));atualizar();analisar();
+}
+function agendar(){
+const evento=$('evento').value.trim(),data=$('data').value;
+if(!evento||!data){alert('Preencha o compromisso e a data.');return}
+let a=ler('ed_agenda');a.push({id:Date.now(),evento,data});salvar('ed_agenda',a);
+$('evento').value='';$('data').value='';atualizar();alert('Compromisso salvo no navegador.');
+}
+function removerEvento(id){salvar('ed_agenda',ler('ed_agenda').filter(x=>x.id!==id));atualizar()}
+function analisar(){
+const area=$('areaAnalise').value,s=saldo(area),contas=Math.max(0,Number($('contasFuturas').value)||0),guardar=Math.max(0,Number($('guardar').value)||0),livre=s-contas;
+let t='<b>Área: '+esc(area)+'</b><br>Saldo registrado: '+dinheiro(s)+'<br>Contas previstas: '+dinheiro(contas)+'<br>Saldo estimado após essas contas: '+dinheiro(livre)+'<br><br>';
+if(livre<0)t+='<span class="vermelho">Atenção: o saldo registrado não cobre as contas previstas. Evite novas compras e priorize as despesas essenciais.</span>';
+else if(livre===0)t+='<span class="amarelo">O saldo ficará zerado depois das contas. Evite comprometer mais dinheiro.</span>';
+else t+='<span class="verde">As contas informadas cabem no saldo atual, mas mantenha uma margem para imprevistos.</span>';
+if(guardar>0)t+='<br><br>Após as contas, '+(livre>=guardar?'a reserva pretendida cabe no saldo estimado. Confira se existem outras despesas.':'a reserva pretendida supera o dinheiro estimado disponível. Considere guardar menos ou esperar.')+'';
+t+='<br><br><small>Esta análise considera somente os valores cadastrados e as contas que você informou.</small>';
+$('dicas').innerHTML=t;
+}
+function decidirCompra(){
+const area=$('areaCompra').value,preco=Number($('preco').value),reserva=Number($('reservaCompra').value)||0,contas=Number($('contasCompra').value)||0,urgente=$('urgente').value,s=saldo(area),resto=s-contas;
+if(!Number.isFinite(preco)||preco<=0||reserva<0||contas<0){alert('Informe um preço válido.');return}
+const falta=Math.max(0,preco-reserva);
+let t='<b>Análise da compra — '+esc(area)+'</b><br>Saldo registrado: '+dinheiro(s)+'<br>Após as contas informadas: '+dinheiro(resto)+'<br>Preço: '+dinheiro(preco)+'<br>Reserva para a compra: '+dinheiro(reserva)+'<br>Falta para completar: '+dinheiro(falta)+'<br><br>';
+if(resto<0)t+='<span class="vermelho">Melhor esperar: o saldo registrado não cobre as contas previstas.</span>';
+else if(reserva>=preco&&resto>=0)t+='<span class="verde">A reserva informada cobre o equipamento. Antes de comprar, confirme que ela não é necessária para outras despesas e emergências.</span>';
+else if(urgente==='sim'&&resto>=preco&&falta>0)t+='<span class="amarelo">O saldo registrado parece cobrir o preço após as contas, mas você ainda não reservou o valor total. Avalie se a compra realmente gera retorno e não compromete a reserva de segurança.</span>';
+else t+='<span class="amarelo">A opção mais prudente é esperar e juntar o valor que falta, mantendo dinheiro para contas e imprevistos.</span>';
+t+='<br><br><small>Orientação automática, não uma decisão financeira definitiva. Informe todas as contas e reservas para melhorar a análise.</small>';
+$('decisao').innerHTML=t;
+}
+function orientarInvestimento(){
+const area=$('areaInvestir').value,v=Number($('valorInvestir').value),prazo=$('prazoInvestir').value,s=saldo(area);
+if(!Number.isFinite(v)||v<=0){alert('Informe um valor válido.');return}
+let t='<b>'+esc(area)+'</b><br>Saldo registrado: '+dinheiro(s)+'<br>Valor pretendido: '+dinheiro(v)+'<br><br>';
+if(s<=0)t+='Não há saldo positivo registrado. Priorize organizar as contas e formar uma reserva antes de investir.';
+else if(v>s)t+='O valor pretendido é maior que o saldo registrado. Evite investir dinheiro necessário para despesas.';
+else if(prazo==='curto')t+='Como você pode precisar do dinheiro em breve, pesquise opções de baixo risco e alta liquidez, verificando taxas, impostos e regras de resgate.';
+else t+='Compare risco, prazo, liquidez, taxas e impostos. Não invista sem entender o produto e sem manter uma reserva para imprevistos.';
+t+='<br><br>Não existe rendimento garantido em todas as aplicações. Para escolher um produto, confira as condições atualizadas com uma instituição regulada.';
+$('investimento').innerHTML=t;
+}
+atualizar();
+</script>
+</body>
+</html>
