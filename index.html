@@ -186,7 +186,71 @@ else t+='Compare risco, prazo, liquidez, taxas e impostos. Não invista sem ente
 t+='<br><br>Não existe rendimento garantido em todas as aplicações. Para escolher um produto, confira as condições atualizadas com uma instituição regulada.';
 $('investimento').innerHTML=t;
 }
-atualizar();
+atualizar();JavaScript
+
+function exportarBackup(){
+  const backup = {
+    aplicativo: "Eterno Delírio Gestão",
+    versao: 1,
+    data: new Date().toISOString(),
+    movimentos: JSON.parse(localStorage.getItem("ed_movimentos") || "[]"),
+    agenda: JSON.parse(localStorage.getItem("ed_agenda") || "[]")
+  };
+
+  const arquivo = new Blob(
+    [JSON.stringify(backup, null, 2)],
+    {type:"application/json"}
+  );
+
+  const url = URL.createObjectURL(arquivo);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "backup-eterno-delirio.json";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function importarBackup(event){
+  const arquivo = event.target.files[0];
+  if(!arquivo) return;
+
+  const leitor = new FileReader();
+
+  leitor.onload = function(){
+    try {
+      const dados = JSON.parse(leitor.result);
+
+      if(dados.aplicativo !== "Eterno Delírio Gestão" ||
+         !Array.isArray(dados.movimentos) ||
+         !Array.isArray(dados.agenda)){
+        throw new Error("Arquivo inválido");
+      }
+
+      if(!confirm("Restaurar este backup? Os dados atuais serão substituídos.")) return;
+
+      localStorage.setItem("ed_movimentos", JSON.stringify(dados.movimentos));
+      localStorage.setItem("ed_agenda", JSON.stringify(dados.agenda));
+
+      alert("Backup restaurado com sucesso!");
+      location.reload();
+    } catch(e){
+      alert("Não foi possível restaurar. Confira o arquivo.");
+    }
+  };
+
+  leitor.readAsText(arquivo);
+}
+
 </script>
+HTML
+
+<section>
+<h2>🔐 Segurança dos dados</h2>
+<p>Guarde uma cópia das suas finanças e compromissos.</p>
+<button onclick="exportarBackup()">📥 Fazer backup dos meus dados</button>
+<label>Restaurar dados de um backup:</label>
+<input type="file" accept=".json,application/json" onchange="importarBackup(event)">
+<small>Guarde o arquivo de backup em um local seguro.</small>
+</section>
 </body>
 </html>
