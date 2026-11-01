@@ -1,4 +1,4 @@
-nome: Gerar APk Android
+name: Gerar APk Android
 
 on:
   workflow_dispatch:
