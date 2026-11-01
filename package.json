@@ -1,0 +1,18 @@
+JSON
+{
+  "name": "eterno-delirio-gestao",
+  "version": "1.0.0",
+  "description": "Aplicativo de gestão pessoal e financeira do Grupo Eterno Delírio",
+  "private": true,
+  "scripts": {
+    "build": "echo Build Android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/local-notifications": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}
