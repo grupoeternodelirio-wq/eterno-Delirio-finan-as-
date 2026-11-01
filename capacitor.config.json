@@ -1,0 +1,7 @@
+JSON
+{
+  "appId": "br.com.eternodelirio.gestao",
+  "appName": "Eterno Delírio Gestão",
+  "webDir":".",
+  "bundledWebRuntime": false
+}
