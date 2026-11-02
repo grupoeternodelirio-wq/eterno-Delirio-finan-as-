@@ -2,6 +2,6 @@
 {
   "appId": "br.com.eternodelirio.gestao",
   "appName": "Eterno Delírio Gestão",
-  "webDir":".",
+  "webDir":"www",
   "bundledWebRuntime": false
 }
